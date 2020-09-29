@@ -1,6 +1,5 @@
 import mysql.connector
 from mysql.connector import Error
-import pandas as pd
 
 # we import error functions seperately so that we have easy access to it for our functions
 
@@ -53,8 +52,8 @@ def execute_query(connection, query):
 
 #creating connection to mysql and creating a new database
 connection = create_server_connection('localhost', 'root', 'root')
-create_database_query = "CREATE DATABASE school"  #(Needed Once)
-create_database(connection, create_database_query) #(Needed Once)
+#create_database_query = "CREATE DATABASE school"  #(Needed Once)
+#create_database(connection, create_database_query) #(Needed Once)
 
 # creating tables for the databse
 create_teacher_table = """
@@ -104,10 +103,10 @@ CREATE TABLE course(
 """
 
 connection = create_db_connection('localhost', 'root', 'root', 'school')
-execute_query(connection, create_teacher_table) #(Needed Once)
-execute_query(connection, create_client_table) #(Needed Once)
-execute_query(connection, create_participant_table) #(Needed Once)
-execute_query(connection, create_course_table) #(Needed Once)
+#execute_query(connection, create_teacher_table) #(Needed Once)
+# execute_query(connection, create_client_table) #(Needed Once)
+# execute_query(connection, create_participant_table) #(Needed Once)
+# execute_query(connection, create_course_table) #(Needed Once)
 
 
 #altering the database tables
@@ -142,10 +141,10 @@ CREATE TABLE takes_course(
 );
 """
 
-execute_query(connection, alter_participant) #(Needed Once)
-execute_query(connection, alter_course) #(Needed Once)
-execute_query(connection, alter_course_again) #(Needed Once)
-execute_query(connection, create_takescourse_table) #(Needed Once)
+# execute_query(connection, alter_participant) #(Needed Once)
+# execute_query(connection, alter_course) #(Needed Once)
+# execute_query(connection, alter_course_again) #(Needed Once)
+# execute_query(connection, create_takescourse_table) #(Needed Once)
 
 pop_teacher = """
 INSERT INTO teacher VALUES
@@ -196,7 +195,11 @@ INSERT INTO course VALUES
 (19, 'Intermediate English', 'ENG', 'B2', 10, '2020-03-29', FALSE, 1, 104),
 (20, 'Fortgeschrittenes Russisch', 'RUS', 'C1',  4, '2020-04-08',  FALSE, 5, 103);
 """
-
+# execute_query(connection, pop_teacher) #(Needed Once)
+# execute_query(connection, pop_client) #(Needed Once)
+# execute_query(connection, pop_participant) #(Needed Once)
+# execute_query(connection, pop_course) #(Needed Once)
+# execute_query(connection, pop_takescourse) #(Needed Once)
 pop_takescourse = """
 INSERT INTO takes_course VALUES
 (101, 15),
@@ -218,8 +221,90 @@ INSERT INTO takes_course VALUES
 (113, 19);
 """
 
-execute_query(connection, pop_teacher) #(Needed Once)
-execute_query(connection, pop_client) #(Needed Once)
-execute_query(connection, pop_participant) #(Needed Once)
-execute_query(connection, pop_course) #(Needed Once)
-execute_query(connection, pop_takescourse) #(Needed Once)
+# execute_query(connection, pop_teacher) #(Needed Once)
+# execute_query(connection, pop_client) #(Needed Once)
+# execute_query(connection, pop_participant) #(Needed Once)
+# execute_query(connection, pop_course) #(Needed Once)
+# execute_query(connection, pop_takescourse) #(Needed Once)
+
+
+# reading data from databases
+
+def read_query(connection, query):
+    cursor = connection.cursor()
+    result = None
+    try:
+        cursor.execute(query)
+        result = cursor.fetchall()
+        return result
+    except Error as err:
+        print(f'Error: {err}')
+
+
+q1 = """
+SELECT *
+FROM teacher;
+"""
+
+q5 = """
+SELECT course.course_id, course.course_name, course.language, client.client_name, client.address
+FROM course
+JOIN client
+ON course.client = client.client_id
+WHERE course.in_school = FALSE;
+"""
+# results = read_query(connection, q5)
+# from_db = []
+
+# for result in results:
+#     result = list(result)
+#     from_db.append(result)
+
+# print(from_db)
+
+
+
+# updating records in the database
+update = """
+UPDATE client 
+SET address = '23 Fingiertweg, 14534 Berlin' 
+WHERE client_id = 101;
+"""
+
+#execute_query(connection, update)
+
+#deleting records from the database
+delete_course = """
+DELETE FROM course
+WHERE course_id = 20;
+"""
+#execute_query(connection, delete_course)
+
+# we can delete whole column using DROP COLUMN and whole table using DROP TABLE
+drop_column = """
+ALTER TABLE course
+DROP COLUMN in_school
+"""
+#execute_query(connection, drop_column)
+
+#executing queries using lists in python
+def execute_list_query(connection, query, val):
+    cursor = connection.cursor()
+    try:
+        cursor.executemany(query,val)
+        connection.commit()
+        print('Query Successful')
+    except Error as err:
+        print(f'Error: {err}')
+
+sql = """
+INSERT INTO teacher (teacher_id, first_name,  last_name,  language_1, language_2, dob, tax_id, phone_no)
+VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+"""
+
+val = [
+    (7, 'Hank', 'Dodson', 'ENG', None, '1991-12-23', 11111, '+491772345678'),
+    (8, 'Sue', 'Perkins', 'MAN', 'ENG', '1976-02-02', 22222, '+491443456432')
+]
+
+#execute_list_query(connection, sql, val)
